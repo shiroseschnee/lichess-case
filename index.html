@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lichess Piece Case</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#1a1c24;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+#wrap{background:#0d0f14;border-radius:12px;padding:24px 20px 28px;font-family:'Rajdhani',sans-serif;color:#e8e8f0;width:100%;max-width:520px;position:relative;overflow:hidden}
+.title{text-align:center;margin-bottom:16px}
+.title h1{font-family:'Orbitron',monospace;font-size:11px;font-weight:500;letter-spacing:4px;color:#555770;margin-bottom:3px}
+.title h2{font-family:'Orbitron',monospace;font-size:19px;font-weight:700;color:#f5c542;letter-spacing:2px}
+.rarity-bar{display:flex;justify-content:center;gap:5px;margin-bottom:14px}
+.rarity-pip{width:28px;height:3px;border-radius:2px}
+.count{display:flex;justify-content:space-between;margin-bottom:10px;padding:0 2px}
+.count span{font-size:12px;color:#555770;letter-spacing:1px}
+.count strong{color:#f5c542}
+#reel-outer{position:relative;background:#14161f;border:1px solid #1e2130;border-radius:8px;overflow:hidden;height:120px;margin-bottom:20px}
+.center-line{position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);width:1px;background:#f5c542;z-index:4;pointer-events:none}
+#fade-l,#fade-r{position:absolute;top:0;bottom:0;width:90px;z-index:3;pointer-events:none}
+#fade-l{left:0;background:linear-gradient(to right,#0d0f14,transparent)}
+#fade-r{right:0;background:linear-gradient(to left,#0d0f14,transparent)}
+#reel{display:flex;align-items:center;height:100%;will-change:transform}
+.item{flex-shrink:0;width:92px;height:104px;margin:0 2px;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:1px solid rgba(255,255,255,0.04)}
+.item .label{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;opacity:0.75}
+.r0{background:rgba(120,130,160,0.08)}.r1{background:rgba(80,170,80,0.09)}.r2{background:rgba(60,120,220,0.1)}.r3{background:rgba(130,70,220,0.1)}.r4{background:rgba(230,80,30,0.12)}.r5{background:rgba(245,197,66,0.12)}
+.piece-wrap{width:56px;height:56px;display:flex;align-items:center;justify-content:center}
+.piece-wrap img{width:56px;height:56px;object-fit:contain}
+#open-btn{display:block;width:100%;padding:13px;background:#f5c542;border:none;border-radius:6px;font-family:'Orbitron',monospace;font-size:13px;font-weight:700;letter-spacing:2px;color:#1a1200;cursor:pointer;text-transform:uppercase;transition:background 0.15s,transform 0.1s}
+#open-btn:hover{background:#ffe066}
+#open-btn:active{transform:scale(0.98);background:#d4a82e}
+#open-btn:disabled{opacity:0.25;cursor:not-allowed}
+#result-panel{display:none;text-align:center;padding:14px 0 0;animation:fadeUp 0.4s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+#result-piece{display:flex;justify-content:center;margin-bottom:6px}
+#result-piece img{width:80px;height:80px;object-fit:contain}
+#result-name{font-family:'Orbitron',monospace;font-size:15px;font-weight:700;letter-spacing:1px}
+#result-rarity{font-size:11px;letter-spacing:3px;text-transform:uppercase;opacity:0.65;margin-top:2px}
+.glow-wrap{position:absolute;inset:0;border-radius:12px;pointer-events:none;z-index:10;display:none}
+</style>
+</head>
+<body>
+<div id="wrap">
+<div class="glow-wrap" id="glow"></div>
+<div class="title"><h1>Lichess</h1><h2>Piece Case</h2></div>
+<div class="rarity-bar">
+<div class="rarity-pip" style="background:#7880a0"></div>
+<div class="rarity-pip" style="background:#4db34d"></div>
+<div class="rarity-pip" style="background:#4a7edb"></div>
+<div class="rarity-pip" style="background:#8b4edb"></div>
+<div class="rarity-pip" style="background:#e64e1e"></div>
+<div class="rarity-pip" style="background:#f5c542"></div>
+</div>
+<div class="count"><span>Cases opened: <strong id="cnt">0</strong></span><span id="last-lbl" style="font-size:12px;letter-spacing:1px"></span></div>
+<div id="reel-outer">
+<div id="fade-l"></div><div id="fade-r"></div>
+<div class="center-line"></div>
+<div id="reel"></div>
+</div>
+<div id="result-panel">
+<div id="result-piece"></div>
+<div id="result-name"></div>
+<div id="result-rarity"></div>
+</div>
+<button id="open-btn" onclick="openCase()">Open Case</button>
+</div>
+<script>
+// Lichess cburnett piece set — hosted on lichess1.org (open source, AGPL)
+// Each piece: wK wQ wR wB wN wP (white = colored via CSS filter)
+const BASE = 'https://lichess1.org/assets/piece/cburnett/';
+const PIECE_URLS = {
+  king:   BASE + 'wK.svg',
+  queen:  BASE + 'wQ.svg',
+  rook:   BASE + 'wR.svg',
+  bishop: BASE + 'wB.svg',
+  knight: BASE + 'wN.svg',
+  pawn:   BASE + 'wP.svg',
+};
+
+function colorToFilter(hex) {
+  const r = parseInt(hex.slice(1,3),16)/255;
+  const g = parseInt(hex.slice(3,5),16)/255;
+  const b = parseInt(hex.slice(5,7),16)/255;
+  const max = Math.max(r,g,b), min = Math.min(r,g,b);
+  let h=0, s=0, l=(max+min)/2;
+  if (max !== min) {
+    const d = max-min;
+    s = l>0.5 ? d/(2-max-min) : d/(max+min);
+    switch(max) {
+      case r: h=((g-b)/d+(g<b?6:0))/6; break;
+      case g: h=((b-r)/d+2)/6; break;
+      case b: h=((r-g)/d+4)/6; break;
+    }
+  }
+  const hDeg = Math.round(h*360);
+  const sat  = Math.round(s*100);
+  const light = Math.round(l*100);
+  const saturate  = sat > 5 ? Math.round(sat*2.5) : 0;
+  const brightness = Math.round(light*1.8);
+  return `invert(1) sepia(1) saturate(${saturate}%) hue-rotate(${hDeg}deg) brightness(${brightness}%)`;
+}
+
+function makePieceEl(key, color, size) {
+  size = size || 56;
+  const wrap = document.createElement('div');
+  wrap.className = 'piece-wrap';
+  wrap.style.cssText = `width:${size}px;height:${size}px`;
+  const img = document.createElement('img');
+  img.src = PIECE_URLS[key];
+  img.width = size;
+  img.height = size;
+  img.style.filter = colorToFilter(color);
+  wrap.appendChild(img);
+  return wrap;
+}
+
+const PIECES = [
+  {key:'pawn',   n:'Staunton Pawn', r:0, rc:'#9198b0', rn:'Consumer Grade',   w:30},
+  {key:'rook',   n:'Staunton Rook', r:0, rc:'#9198b0', rn:'Consumer Grade',   w:25},
+  {key:'knight', n:'Forest Knight', r:1, rc:'#4db34d', rn:'Industrial Grade', w:18},
+  {key:'bishop', n:'Ivory Bishop',  r:2, rc:'#4a7edb', rn:'Mil-Spec',         w:12},
+  {key:'queen',  n:'Arctic Queen',  r:3, rc:'#8b4edb', rn:'Restricted',       w:8},
+  {key:'knight', n:'Shadow Knight', r:4, rc:'#e64e1e', rn:'Classified',       w:3},
+  {key:'king',   n:'Golden King',   r:5, rc:'#f5c542', rn:'Covert ★',         w:1.5},
+];
+
+let spinning = false, caseCount = 0;
+const reel = document.getElementById('reel');
+
+function pick() {
+  const total = PIECES.reduce((a,p) => a+p.w, 0);
+  let rand = Math.random() * total;
+  for (const p of PIECES) { rand -= p.w; if (rand <= 0) return p; }
+  return PIECES[0];
+}
+
+function makeItem(p) {
+  const d = document.createElement('div');
+  d.className = `item r${p.r}`;
+  d.appendChild(makePieceEl(p.key, p.rc, 56));
+  const lbl = document.createElement('span');
+  lbl.className = 'label';
+  lbl.style.color = p.rc;
+  lbl.textContent = p.key.charAt(0).toUpperCase() + p.key.slice(1);
+  d.appendChild(lbl);
+  return d;
+}
+
+function buildReel(winner, count) {
+  reel.innerHTML = '';
+  const items = [];
+  for (let i = 0; i < count; i++) items.push(PIECES[Math.floor(Math.random()*PIECES.length)]);
+  items.push(winner);
+  for (let i = 0; i < 8; i++) items.push(PIECES[Math.floor(Math.random()*PIECES.length)]);
+  items.forEach(p => reel.appendChild(makeItem(p)));
+}
+
+function csEase(t) { return 1 - Math.pow(1-t, 4); }
+
+function openCase() {
+  if (spinning) return;
+  spinning = true;
+  document.getElementById('open-btn').disabled = true;
+  document.getElementById('result-panel').style.display = 'none';
+  document.getElementById('glow').style.display = 'none';
+
+  const winner = pick();
+  const ITEM_W = 96, PRE = 40;
+  buildReel(winner, PRE);
+  reel.style.transform = 'translateX(0)';
+
+  const ow = document.getElementById('reel-outer').offsetWidth;
+  const targetX = ow/2 - (PRE*ITEM_W + ITEM_W/2);
+  const TOTAL_DURATION = 8200;
+  let start = null;
+
+  function animate(ts) {
+    if (!start) start = ts;
+    const rawT = Math.min((ts-start)/TOTAL_DURATION, 1);
+    reel.style.transform = `translateX(${targetX * csEase(rawT)}px)`;
+    if (rawT < 1) requestAnimationFrame(animate);
+    else { reel.style.transform = `translateX(${targetX}px)`; finish(winner); }
+  }
+  requestAnimationFrame(animate);
+}
+
+function finish(winner) {
+  spinning = false;
+  caseCount++;
+  document.getElementById('cnt').textContent = caseCount;
+  document.getElementById('last-lbl').textContent = winner.rn;
+  document.getElementById('last-lbl').style.color = winner.rc;
+
+  const bigWrap = document.createElement('div');
+  const bigImg = document.createElement('img');
+  bigImg.src = PIECE_URLS[winner.key];
+  bigImg.style.cssText = `width:80px;height:80px;object-fit:contain;filter:${colorToFilter(winner.rc)}`;
+  bigWrap.appendChild(bigImg);
+  document.getElementById('result-piece').innerHTML = '';
+  document.getElementById('result-piece').appendChild(bigWrap);
+
+  document.getElementById('result-name').textContent = winner.n;
+  document.getElementById('result-name').style.color = winner.rc;
+  document.getElementById('result-rarity').textContent = winner.rn;
+  document.getElementById('result-rarity').style.color = winner.rc;
+  document.getElementById('result-panel').style.display = 'block';
+
+  if (winner.r >= 4) {
+    const g = document.getElementById('glow');
+    g.style.cssText = `display:block;position:absolute;inset:0;border-radius:12px;pointer-events:none;z-index:10;box-shadow:inset 0 0 50px 15px ${winner.rc}44,0 0 30px 8px ${winner.rc}22;border:1px solid ${winner.rc}55`;
+    setTimeout(() => { g.style.display = 'none'; }, 2500);
+  }
+  document.getElementById('open-btn').disabled = false;
+}
+</script>
+</body>
+</html>
