@@ -9,7 +9,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{
-  background:#f0ede8;
+  background:#d4e8e0;
   display:flex;align-items:center;justify-content:center;
   min-height:100vh;font-family:'Rajdhani',sans-serif;
 }
@@ -18,18 +18,13 @@ body::before{
   background-image:linear-gradient(rgba(0,0,0,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.04) 1px,transparent 1px);
   background-size:40px 40px;pointer-events:none;
 }
-body::after{
-  content:'';position:fixed;inset:0;
-  background:radial-gradient(ellipse at center,transparent 30%,rgba(180,170,155,0.55) 100%);
-  pointer-events:none;
-}
 #stage{position:relative;z-index:1;width:100%;max-width:540px;padding:20px;}
 .eyebrow{text-align:center;margin-bottom:18px;}
-.eyebrow span{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:5px;color:#a09888;text-transform:uppercase;}
+.eyebrow span{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:5px;color:#8ab0a0;text-transform:uppercase;}
 #wrap{
   background:#0f1117;border-radius:16px;padding:28px 24px 28px;
   color:#e8e8f0;position:relative;overflow:hidden;
-  box-shadow:0 2px 0 rgba(255,255,255,0.04) inset,0 40px 80px rgba(0,0,0,0.45),0 8px 24px rgba(0,0,0,0.3);
+  box-shadow:0 30px 80px rgba(0,0,0,0.45),0 8px 24px rgba(0,0,0,0.3), 0 2px 0 rgba(255,255,255,0.04) inset;
 }
 #wrap::before{
   content:'';position:absolute;top:0;left:0;right:0;height:1px;
@@ -41,139 +36,90 @@ body::after{
 .count span{font-size:11px;color:#44475a;letter-spacing:1px}
 .count strong{color:#f5c542}
 #reel-outer{
-  position:relative;background:#2a0a12;border:1px solid #1c1f2e;
+  position:relative;background:#f5e6c8;border:2px solid #e8c87a;
   border-radius:10px;overflow:hidden;height:116px;margin-bottom:0;
+  box-shadow:0 0 30px rgba(245,200,100,0.2);
 }
 .center-line{
   position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);
-  width:1px;background:#f5c542;z-index:4;pointer-events:none;opacity:0.9;
+  width:2px;background:#c8860a;z-index:4;pointer-events:none;opacity:1;
 }
-#fade-l,#fade-r{position:absolute;top:0;bottom:0;width:100px;z-index:3;pointer-events:none}
-#fade-l{left:0;background:linear-gradient(to right,#2a0a12 20%,transparent)}
-#fade-r{right:0;background:linear-gradient(to left,#2a0a12 20%,transparent)}
+#fade-l,#fade-r{position:absolute;top:0;bottom:0;width:90px;z-index:3;pointer-events:none}
+#fade-l{left:0;background:linear-gradient(to right,#f5e6c8 20%,transparent)}
+#fade-r{right:0;background:linear-gradient(to left,#f5e6c8 20%,transparent)}
 #reel{display:flex;align-items:center;height:100%;will-change:transform}
 .item{
   flex-shrink:0;width:92px;height:104px;margin:0 2px;border-radius:7px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:5px;border:1px solid rgba(255,255,255,0.03);
+  gap:5px;border:1px solid rgba(0,0,0,0.08);
 }
-.item .label{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:0.6}
-.r0{background:rgba(100,110,140,0.1)}.r1{background:rgba(60,160,60,0.1)}.r2{background:rgba(50,110,210,0.1)}
-.r3{background:rgba(120,60,210,0.1)}.r4{background:rgba(220,70,20,0.12)}.r5{background:rgba(245,197,66,0.1)}
+.item .label{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:0.7}
+.r0{background:#ddd0b0}.r1{background:#c8ddc0}.r2{background:#bccce0}
+.r3{background:#ccc0e0}.r4{background:#e0c0b0}.r5{background:#f0e098}
 .piece-wrap{width:54px;height:54px;display:flex;align-items:center;justify-content:center}
 .piece-wrap img{width:54px;height:54px;object-fit:contain}
 
-/* ── CS-style result reveal ── */
 #result-overlay{
-  display:none;
-  position:absolute;inset:0;
-  border-radius:16px;
-  z-index:20;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  background:#0f1117;
-  animation:overlayIn 0.35s ease;
+  display:none;position:absolute;inset:0;border-radius:16px;z-index:20;
+  flex-direction:column;align-items:center;justify-content:center;
+  background:#0f1117;animation:overlayIn 0.35s ease;
 }
 @keyframes overlayIn{from{opacity:0}to{opacity:1}}
 #result-overlay.visible{display:flex;}
-
-/* coloured stripe behind the piece — like CS item banner */
-#result-stripe{
-  position:absolute;inset:0;
-  opacity:0.07;
-}
-/* top label row */
-#result-top{
-  position:relative;z-index:2;
-  text-align:center;
-  margin-bottom:10px;
-}
+#result-stripe{position:absolute;inset:0;opacity:0.07;}
+#result-top{position:relative;z-index:2;text-align:center;margin-bottom:10px;}
 #result-rarity-tag{
-  display:inline-block;
-  font-family:'Rajdhani',sans-serif;
-  font-size:10px;font-weight:700;letter-spacing:3px;
-  text-transform:uppercase;
-  padding:3px 10px;border-radius:3px;
-  margin-bottom:8px;
-  opacity:0.9;
+  display:inline-block;font-family:'Rajdhani',sans-serif;
+  font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
+  padding:3px 10px;border-radius:3px;margin-bottom:8px;opacity:0.9;
 }
 #result-piece-big{
-  position:relative;z-index:2;
-  width:120px;height:120px;
-  display:flex;align-items:center;justify-content:center;
-  margin-bottom:14px;
+  position:relative;z-index:2;width:120px;height:120px;
+  display:flex;align-items:center;justify-content:center;margin-bottom:14px;
 }
 #result-piece-big img{
   width:110px;height:110px;object-fit:contain;
-  filter:drop-shadow(0 0 0px transparent);
   animation:pieceDrop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.1s both;
 }
 @keyframes pieceDrop{
   from{transform:scale(0.5) translateY(-20px);opacity:0}
   to{transform:scale(1) translateY(0);opacity:1}
 }
-#result-info{
-  position:relative;z-index:2;
-  text-align:center;
-}
-#result-piece-name{
-  font-family:'Orbitron',monospace;
-  font-size:18px;font-weight:700;letter-spacing:2px;
-  margin-bottom:3px;
-}
-#result-piece-sub{
-  font-size:12px;color:#666880;letter-spacing:2px;text-transform:uppercase;
-  margin-bottom:20px;
-}
-/* bottom bar with close button */
-#result-actions{
-  position:relative;z-index:2;
-  display:flex;gap:10px;width:100%;padding:0 4px;
-}
+#result-info{position:relative;z-index:2;text-align:center;}
+#result-piece-name{font-family:'Orbitron',monospace;font-size:18px;font-weight:700;letter-spacing:2px;margin-bottom:3px;}
+#result-piece-sub{font-size:12px;color:#666880;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px;}
+#result-actions{position:relative;z-index:2;display:flex;gap:10px;width:100%;padding:0 4px;}
 #btn-close{
-  flex:1;padding:11px;
-  background:rgba(255,255,255,0.06);
-  border:1px solid rgba(255,255,255,0.1);
-  border-radius:6px;
+  flex:1;padding:11px;background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.1);border-radius:6px;
   font-family:'Orbitron',monospace;font-size:10px;font-weight:700;
-  letter-spacing:2px;color:#888;cursor:pointer;text-transform:uppercase;
-  transition:background 0.15s;
+  letter-spacing:2px;color:#888;cursor:pointer;text-transform:uppercase;transition:background 0.15s;
 }
 #btn-close:hover{background:rgba(255,255,255,0.1);color:#ccc}
 #btn-open-again{
-  flex:2;padding:11px;
-  background:#f5c542;border:none;border-radius:6px;
+  flex:2;padding:11px;background:#e8c050;border:none;border-radius:6px;
   font-family:'Orbitron',monospace;font-size:10px;font-weight:700;
-  letter-spacing:2px;color:#0f0900;cursor:pointer;text-transform:uppercase;
-  transition:background 0.15s,box-shadow 0.15s;
-  box-shadow:0 4px 16px rgba(245,197,66,0.3);
+  letter-spacing:2px;color:#1a1000;cursor:pointer;text-transform:uppercase;transition:background 0.15s;
 }
-#btn-open-again:hover{background:#ffe55c;box-shadow:0 4px 24px rgba(245,197,66,0.5)}
-
-/* confetti particles */
+#btn-open-again:hover{background:#f5d060;}
 .particle{
   position:absolute;width:6px;height:6px;border-radius:1px;
-  pointer-events:none;z-index:3;
-  animation:particleFall 1.2s ease-in forwards;
+  pointer-events:none;z-index:3;animation:particleFall 1.2s ease-in forwards;
 }
 @keyframes particleFall{
   0%{transform:translateY(0) rotate(0deg);opacity:1}
   100%{transform:translateY(180px) rotate(720deg);opacity:0}
 }
-
-/* open button */
 #open-btn{
   display:block;width:100%;padding:14px;margin-top:18px;
-  background:#f5c542;border:none;border-radius:8px;
+  background:#e8c050;border:none;border-radius:8px;
   font-family:'Orbitron',monospace;font-size:12px;font-weight:700;
-  letter-spacing:3px;color:#0f0900;cursor:pointer;text-transform:uppercase;
-  transition:background 0.15s,transform 0.1s,box-shadow 0.15s;
-  box-shadow:0 4px 20px rgba(245,197,66,0.3);
+  letter-spacing:3px;color:#1a1000;cursor:pointer;text-transform:uppercase;
+  transition:background 0.15s,transform 0.1s;
 }
-#open-btn:hover{background:#ffe55c;box-shadow:0 4px 28px rgba(245,197,66,0.5)}
-#open-btn:active{transform:scale(0.98);background:#d4a82e}
-#open-btn:disabled{opacity:0.2;cursor:not-allowed;box-shadow:none}
+#open-btn:hover{background:#f5d060;}
+#open-btn:active{transform:scale(0.98);}
+#open-btn:disabled{opacity:0.15;cursor:not-allowed;}
 .divider{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.05),transparent);margin-top:18px;}
 </style>
 </head>
@@ -181,16 +127,10 @@ body::after{
 <div id="stage">
   <div class="eyebrow"><span>Lichess &nbsp;·&nbsp; Piece Case</span></div>
   <div id="wrap">
-
-    <!-- CS-style result overlay (shown after spin) -->
     <div id="result-overlay">
       <div id="result-stripe"></div>
-      <div id="result-top">
-        <div id="result-rarity-tag">Consumer Grade</div>
-      </div>
-      <div id="result-piece-big">
-        <img id="result-img" src="" alt="">
-      </div>
+      <div id="result-top"><div id="result-rarity-tag">Consumer Grade</div></div>
+      <div id="result-piece-big"><img id="result-img" src="" alt=""></div>
       <div id="result-info">
         <div id="result-piece-name">Staunton Pawn</div>
         <div id="result-piece-sub">Lichess Piece Case</div>
@@ -244,10 +184,10 @@ function makePieceEl(key,color,size){
 }
 
 const PIECES=[
-  {key:'pawn',  n:'Pawn', r:0,rc:'#9198b0',rn:'Consumer Grade',  w:30},
-  {key:'rook',  n:'Rook', r:0,rc:'#9198b0',rn:'Consumer Grade',  w:25},
+  {key:'pawn',  n:'Pawn',   r:0,rc:'#9198b0',rn:'Consumer Grade',  w:30},
+  {key:'rook',  n:'Rook',   r:0,rc:'#9198b0',rn:'Consumer Grade',  w:25},
   {key:'knight',n:'Knight', r:1,rc:'#4db34d',rn:'Industrial Grade',w:18},
-  {key:'bishop',n:'Bishop',  r:2,rc:'#4a7edb',rn:'Mil-Spec',        w:12},
+  {key:'bishop',n:'Bishop', r:2,rc:'#4a7edb',rn:'Mil-Spec',        w:12},
   {key:'queen', n:'Queen',  r:3,rc:'#8b4edb',rn:'Restricted',      w:8},
   {key:'knight',n:'Knight', r:4,rc:'#e64e1e',rn:'Classified',      w:3},
   {key:'king',  n:'King',   r:5,rc:'#f5c542',rn:'Covert \u2605',   w:1.5},
@@ -283,17 +223,14 @@ function openCase(){
   if(spinning)return;
   spinning=true;
   document.getElementById('open-btn').disabled=true;
-
   const winner=pick();
   const ITEM_W=96,PRE=40;
   buildReel(winner,PRE);
   reel.style.transform='translateX(0)';
-
   const ow=document.getElementById('reel-outer').offsetWidth;
   const targetX=ow/2-(PRE*ITEM_W+ITEM_W/2);
   const TOTAL_DURATION=8200;
   let start=null;
-
   function animate(ts){
     if(!start)start=ts;
     const rawT=Math.min((ts-start)/TOTAL_DURATION,1);
@@ -307,54 +244,26 @@ function openCase(){
 function spawnParticles(color){
   const overlay=document.getElementById('result-overlay');
   for(let i=0;i<22;i++){
-    const p=document.createElement('div');
-    p.className='particle';
-    p.style.cssText=`
-      left:${20+Math.random()*60}%;
-      top:${10+Math.random()*30}%;
-      background:${Math.random()>0.5?color:'#ffffff22'};
-      animation-delay:${Math.random()*0.4}s;
-      animation-duration:${0.8+Math.random()*0.6}s;
-      width:${4+Math.random()*5}px;
-      height:${4+Math.random()*5}px;
-      border-radius:${Math.random()>0.5?'50%':'2px'};
-    `;
-    overlay.appendChild(p);
-    setTimeout(()=>p.remove(),1600);
+    const p=document.createElement('div');p.className='particle';
+    p.style.cssText=`left:${20+Math.random()*60}%;top:${10+Math.random()*30}%;background:${Math.random()>0.5?color:'#ffffff22'};animation-delay:${Math.random()*0.4}s;animation-duration:${0.8+Math.random()*0.6}s;width:${4+Math.random()*5}px;height:${4+Math.random()*5}px;border-radius:${Math.random()>0.5?'50%':'2px'};`;
+    overlay.appendChild(p);setTimeout(()=>p.remove(),1600);
   }
 }
 
 function showResult(winner){
-  spinning=false;
-  caseCount++;
+  spinning=false;caseCount++;
   document.getElementById('cnt').textContent=caseCount;
   document.getElementById('last-lbl').textContent=winner.rn;
   document.getElementById('last-lbl').style.color=winner.rc;
-
-  // populate overlay
   const tag=document.getElementById('result-rarity-tag');
-  tag.textContent=winner.rn;
-  tag.style.background=winner.rc+'22';
-  tag.style.color=winner.rc;
-  tag.style.border=`1px solid ${winner.rc}55`;
-
-  const stripe=document.getElementById('result-stripe');
-  stripe.style.background=`radial-gradient(ellipse at center, ${winner.rc} 0%, transparent 70%)`;
-
+  tag.textContent=winner.rn;tag.style.background=winner.rc+'22';tag.style.color=winner.rc;tag.style.border=`1px solid ${winner.rc}55`;
+  document.getElementById('result-stripe').style.background=`radial-gradient(ellipse at center, ${winner.rc} 0%, transparent 70%)`;
   const img=document.getElementById('result-img');
   img.src=PIECE_URLS[winner.key];
-  img.style.filter=colorToFilter(winner.rc);
-  // glow shadow on piece
   img.style.filter=colorToFilter(winner.rc)+` drop-shadow(0 0 18px ${winner.rc}88)`;
-
   document.getElementById('result-piece-name').textContent=winner.n;
   document.getElementById('result-piece-name').style.color=winner.rc;
-
-  // show overlay
-  const overlay=document.getElementById('result-overlay');
-  overlay.classList.add('visible');
-
-  // particles for rare drops
+  document.getElementById('result-overlay').classList.add('visible');
   if(winner.r>=3) setTimeout(()=>spawnParticles(winner.rc),350);
 }
 
