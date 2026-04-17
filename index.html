@@ -379,6 +379,16 @@ function closeResult(){
   document.getElementById('result-overlay').classList.remove('visible');
   document.getElementById('open-btn').disabled=false;
 }
+  document.addEventListener('keydown', e => {
+  if((e.code === 'Space' || e.code === 'Enter') && !spinning){
+    e.preventDefault();
+    if(document.getElementById('result-overlay').classList.contains('visible')){
+      closeResult();
+    } else {
+      openCase();
+    }
+  }
+});
 </script>
 </body>
 </html>
