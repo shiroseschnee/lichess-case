@@ -18,13 +18,70 @@ body::before{
   background-image:linear-gradient(rgba(0,0,0,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.04) 1px,transparent 1px);
   background-size:40px 40px;pointer-events:none;
 }
+
+/* ── Corner GUI ── */
+#corner-gui{
+  position:fixed;top:16px;right:16px;z-index:100;
+  background:#0f1117;border-radius:12px;
+  border:1px solid #1e2030;
+  box-shadow:0 8px 32px rgba(0,0,0,0.4);
+  width:160px;
+  overflow:hidden;
+}
+#gui-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 12px;cursor:pointer;user-select:none;
+}
+#gui-header:hover{background:rgba(255,255,255,0.03);}
+#gui-header h3{
+  font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;
+  color:#666688;text-transform:uppercase;
+}
+#gui-toggle{
+  font-size:10px;color:#444466;transition:transform 0.2s;line-height:1;
+}
+#gui-toggle.open{transform:rotate(180deg);}
+#gui-body{
+  padding:0 12px 12px;
+  max-height:300px;
+  transition:max-height 0.25s ease, padding 0.25s ease, opacity 0.2s ease;
+  opacity:1;
+}
+#gui-body.collapsed{
+  max-height:0;
+  padding-top:0;padding-bottom:0;
+  opacity:0;pointer-events:none;
+}
+.gui-option{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 8px;border-radius:6px;cursor:pointer;
+  margin-bottom:3px;transition:background 0.1s;
+  border:1px solid transparent;
+}
+.gui-option:hover{background:rgba(255,255,255,0.05);}
+.gui-option.active{background:rgba(245,197,66,0.1);border-color:rgba(245,197,66,0.3);}
+.gui-dot{
+  width:10px;height:10px;border-radius:50%;flex-shrink:0;
+  border:1px solid rgba(255,255,255,0.2);
+  display:flex;align-items:center;justify-content:center;
+}
+.gui-dot::after{
+  content:'';width:5px;height:5px;border-radius:50%;
+  background:transparent;transition:background 0.1s;
+}
+.gui-option.active .gui-dot::after{background:#f5c542;}
+.gui-piece-img{width:22px;height:22px;object-fit:contain;flex-shrink:0;}
+.gui-label{font-size:11px;font-weight:600;letter-spacing:1px;color:#888;text-transform:uppercase;}
+.gui-option.active .gui-label{color:#e8e8f0;}
+.gui-divider{height:1px;background:rgba(255,255,255,0.05);margin:6px 0;}
+
 #stage{position:relative;z-index:1;width:100%;max-width:540px;padding:20px;}
 .eyebrow{text-align:center;margin-bottom:18px;}
 .eyebrow span{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:5px;color:#8ab0a0;text-transform:uppercase;}
 #wrap{
   background:#0f1117;border-radius:16px;padding:28px 24px 28px;
   color:#e8e8f0;position:relative;overflow:hidden;
-  box-shadow:0 30px 80px rgba(0,0,0,0.45),0 8px 24px rgba(0,0,0,0.3), 0 2px 0 rgba(255,255,255,0.04) inset;
+  box-shadow:0 30px 80px rgba(0,0,0,0.45),0 8px 24px rgba(0,0,0,0.3),0 2px 0 rgba(255,255,255,0.04) inset;
 }
 #wrap::before{
   content:'';position:absolute;top:0;left:0;right:0;height:1px;
@@ -124,6 +181,22 @@ body::before{
 </style>
 </head>
 <body>
+
+<!-- Corner GUI -->
+<div id="corner-gui">
+  <div id="gui-header" onclick="toggleGui()">
+    <h3>Force Drop</h3>
+    <span id="gui-toggle" class="open">▾</span>
+  </div>
+  <div id="gui-body">
+    <div class="gui-option active" onclick="setForce('random')" id="opt-random">
+      <div class="gui-dot"></div>
+      <span class="gui-label">Random</span>
+    </div>
+    <div class="gui-divider"></div>
+  </div>
+</div>
+
 <div id="stage">
   <div class="eyebrow"><span>Lichess &nbsp;·&nbsp; Piece Case</span></div>
   <div id="wrap">
@@ -167,22 +240,6 @@ body::before{
 const BASE='https://lichess1.org/assets/piece/cburnett/';
 const PIECE_URLS={king:BASE+'wK.svg',queen:BASE+'wQ.svg',rook:BASE+'wR.svg',bishop:BASE+'wB.svg',knight:BASE+'wN.svg',pawn:BASE+'wP.svg'};
 
-function colorToFilter(hex){
-  const r=parseInt(hex.slice(1,3),16)/255,g=parseInt(hex.slice(3,5),16)/255,b=parseInt(hex.slice(5,7),16)/255;
-  const max=Math.max(r,g,b),min=Math.min(r,g,b);
-  let h=0,s=0,l=(max+min)/2;
-  if(max!==min){const d=max-min;s=l>0.5?d/(2-max-min):d/(max+min);switch(max){case r:h=((g-b)/d+(g<b?6:0))/6;break;case g:h=((b-r)/d+2)/6;break;case b:h=((r-g)/d+4)/6;break;}}
-  const hDeg=Math.round(h*360),sat=Math.round(s*100),light=Math.round(l*100);
-  return `invert(1) sepia(1) saturate(${sat>5?Math.round(sat*2.5):0}%) hue-rotate(${hDeg}deg) brightness(${Math.round(light*1.8)}%)`;
-}
-
-function makePieceEl(key,color,size){
-  size=size||54;
-  const wrap=document.createElement('div');wrap.className='piece-wrap';wrap.style.cssText=`width:${size}px;height:${size}px`;
-  const img=document.createElement('img');img.src=PIECE_URLS[key];img.width=size;img.height=size;img.style.filter=colorToFilter(color);
-  wrap.appendChild(img);return wrap;
-}
-
 const PIECES=[
   {key:'pawn',  n:'Pawn',   r:0,rc:'#9198b0',rn:'Consumer Grade',  w:30},
   {key:'rook',  n:'Rook',   r:0,rc:'#9198b0',rn:'Consumer Grade',  w:25},
@@ -193,10 +250,61 @@ const PIECES=[
   {key:'king',  n:'King',   r:5,rc:'#f5c542',rn:'Covert \u2605',   w:1.5},
 ];
 
+const GUI_PIECES=[
+  {key:'pawn',  n:'Pawn',   rc:'#9198b0'},
+  {key:'rook',  n:'Rook',   rc:'#9198b0'},
+  {key:'knight',n:'Knight', rc:'#4db34d'},
+  {key:'bishop',n:'Bishop', rc:'#4a7edb'},
+  {key:'queen', n:'Queen',  rc:'#8b4edb'},
+  {key:'king',  n:'King',   rc:'#f5c542'},
+];
+
+let forcedKey='random';
 let spinning=false,caseCount=0;
 const reel=document.getElementById('reel');
 
+function colorToFilter(hex){
+  const r=parseInt(hex.slice(1,3),16)/255,g=parseInt(hex.slice(3,5),16)/255,b=parseInt(hex.slice(5,7),16)/255;
+  const max=Math.max(r,g,b),min=Math.min(r,g,b);
+  let h=0,s=0,l=(max+min)/2;
+  if(max!==min){const d=max-min;s=l>0.5?d/(2-max-min):d/(max+min);switch(max){case r:h=((g-b)/d+(g<b?6:0))/6;break;case g:h=((b-r)/d+2)/6;break;case b:h=((r-g)/d+4)/6;break;}}
+  const hDeg=Math.round(h*360),sat=Math.round(s*100),light=Math.round(l*100);
+  return `invert(1) sepia(1) saturate(${sat>5?Math.round(sat*2.5):0}%) hue-rotate(${hDeg}deg) brightness(${Math.round(light*1.8)}%)`;
+}
+
+// Build piece options
+const guiBody=document.getElementById('gui-body');
+GUI_PIECES.forEach(p=>{
+  const div=document.createElement('div');
+  div.className='gui-option';
+  div.id='opt-'+p.key;
+  div.onclick=()=>setForce(p.key);
+  div.innerHTML=`<div class="gui-dot"></div><img class="gui-piece-img" src="${PIECE_URLS[p.key]}" style="filter:${colorToFilter(p.rc)}" alt="${p.n}"><span class="gui-label" style="color:${p.rc}">${p.n}</span>`;
+  guiBody.appendChild(div);
+});
+
+function toggleGui(){
+  const body=document.getElementById('gui-body');
+  const toggle=document.getElementById('gui-toggle');
+  body.classList.toggle('collapsed');
+  toggle.classList.toggle('open');
+}
+
+function setForce(key){
+  forcedKey=key;
+  document.querySelectorAll('.gui-option').forEach(el=>el.classList.remove('active'));
+  document.getElementById('opt-'+key).classList.add('active');
+}
+
+function makePieceEl(key,color,size){
+  size=size||54;
+  const wrap=document.createElement('div');wrap.className='piece-wrap';wrap.style.cssText=`width:${size}px;height:${size}px`;
+  const img=document.createElement('img');img.src=PIECE_URLS[key];img.width=size;img.height=size;img.style.filter=colorToFilter(color);
+  wrap.appendChild(img);return wrap;
+}
+
 function pick(){
+  if(forcedKey!=='random') return PIECES.find(p=>p.key===forcedKey)||PIECES[0];
   const total=PIECES.reduce((a,p)=>a+p.w,0);let rand=Math.random()*total;
   for(const p of PIECES){rand-=p.w;if(rand<=0)return p;}return PIECES[0];
 }
